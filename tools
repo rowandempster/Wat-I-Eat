@@ -1,0 +1,105 @@
+#lang racket
+
+(require "../common/uw-api.rkt")
+
+
+;;;;;;;;;;;;;;;;
+;; INTERFACE: ;;
+;;;;;;;;;;;;;;;;
+
+;; An Interface for some user friendly functions created using 
+;; data from the UW-API
+
+(provide meal-info menu-lookup get-outlet get-day get-meal)
+
+;;(menu-lookup outlet day meal) produces the menu for Outlet ;;'outlet' on Day 'day' for Meal 'meal'
+;;menu-lookup: Outlet Day Meal -> (listof (list String String))
+
+;;;;;;;;;;;;;;;;;;;;;
+;; IMPLEMENTATION: ;;
+;;;;;;;;;;;;;;;;;;;;;
+
+;;===========MENU LOOKUP=========================
+
+(define (outlet-list) (find-entry-helper (uw-api "/foodservices/menu") "outlets"))
+
+;;returns what can be filtered by day directly
+(define (get-outlet outlet)
+  (define (get-outlet-cut outlet)
+    (find-entry-helper (first outlet) "menu"))
+  (get-outlet-cut (filter (lambda (x) (string=? (string-downcase (find-entry-helper x "outlet_name")) 
+  (string-downcase outlet))) (outlet-list))))
+
+;;returns list ready to be filtered by meal
+(define (get-day outlet day)
+  (find-entry-helper 
+   (first (filter (lambda (curr-day) 
+                    (string=? (string-downcase day)
+                              (string-downcase (find-entry-helper curr-day "day")))) (get-outlet outlet))) "meals"))
+
+;;returns only list of menu itme
+(define (get-meal outlet day meal)
+  (second (first (filter (lambda (curr-meal) 
+                           (string=? (string-downcase meal)
+                                     (string-downcase (first curr-meal))))
+                         (get-day outlet day)))))
+
+;;displays meals in more appealing way
+(define (menu-lookup outlet day meal)
+  (map (lambda (item)
+         (newline) item) (foldr (lambda (curr-item items)
+           (cons (list (string-append "Meal: " (find-entry-helper curr-item "product_name")) 
+           (string-append "Meal ID: " 
+           (my-number->string (check-null (find-entry-helper curr-item "product_id"))))) items)) 
+           empty (get-meal outlet day meal))))
+
+;;(find-entry-helper info entry) finds the sub-list in the list 
+;;'info' that has a string equivalent to 'entry' as its first ;;element, or an error if no such entry exists
+;;find-entry-helper: (listof (list String X)) -> X
+(define (find-entry-helper info entry)
+  (cond 
+   [(empty? info) (error "Didn't find entry")]
+   [(string=? (first (first info)) entry) (second (first info))]
+   [else (find-entry-helper (rest info) entry)]))
+
+
+
+;;=====================MEAL INFO======================
+
+(define (meal-info id)
+  (define x (uw-api (string-append "/foodservices/products/" (number->string id))))
+  (list (string-append "Meal Name: " (check-null (find-entry-helper x "product_name")))
+  (string-append "Ingredients: " (check-null (find-entry-helper x "ingredients")))
+  (string-append "Calories: " (my-number->string (check-null (find-entry-helper x "calories"))))
+ (string-append "% Daily Fat: " (my-number->string (check-null (find-entry-helper x "total_fat_percent"))))
+ (string-append "% Daily Saturated Fat: " (my-number->string (check-null (find-entry-helper x "fat_saturated_percent")))) 
+ (string-append "% Daily Trans Fat: " (my-number->string (check-null (find-entry-helper x "fat_trans_percent")))) 
+ (string-append "% Daily Sodium: " (my-number->string (check-null (find-entry-helper x "sodium_percent"))))
+  (string-append "% Daily Carbohydrates: " (my-number->string (check-null (find-entry-helper x "carbo_percent"))))
+  (string-append "% Daily Fibre: " (my-number->string (check-null (find-entry-helper x "carbo_fibre_percent"))))
+  (string-append "Sugar (grams): " (my-number->string (check-null (find-entry-helper x "carbo_sugars_g"))))
+  (string-append "Protein (grams): " (my-number->string (check-null (find-entry-helper x "protein_g"))))
+  (string-append "% Daily Vitamin A: " (my-number->string (check-null (find-entry-helper x "vitamin_a_percent")))) 
+  (string-append "% Daily Vitamin C: " (my-number->string (check-null (find-entry-helper x "vitamin_c_percent")))) 
+  (string-append "% Daily Calcium: " (my-number->string (check-null (find-entry-helper x "calcium_percent"))))
+  (string-append "% Daily Iron: " (my-number->string (check-null (find-entry-helper x "iron_percent"))))))
+
+(define (check-null item)
+  (cond
+   [(null? item) "Info not provided"]
+   [else item]))
+  
+(define (my-number->string item)
+  (cond
+   [(number? item) (number->string item)]
+   [else item]))
+  
+  
+  
+
+
+
+
+
+
+
