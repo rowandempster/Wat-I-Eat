@@ -2,6 +2,14 @@
 
 (require "../common/uw-api.rkt")
 
+;; INTEGRITY STATEMENT (modify if neccessary)
+;; I received help from the following sources:
+;; None. I am the sole author of this work 
+
+;; sign this statement by removing the line below and entering your name
+
+;; Name: Rowan Dempster  
+;; login ID: R2DEMPST
 
 ;;;;;;;;;;;;;;;;
 ;; INTERFACE: ;;
@@ -147,73 +155,73 @@
 ;;Description given in interface
 (define (meal-info id)
   (define x (uw-api (string-append "/foodservices/products/" 
-                                   (number->string id))))
-  (list (string-append "Meal Name: " 
+                                   id)))
+  (printf (string-append "Meal Name: " 
                        (check-null (find-entry-helper 
-                                    x "product_name")))
-  (string-append "Ingredients: " 
+                                    x "product_name")) "\n"))
+  (printf (string-append "Ingredients: " 
                  (check-null (find-entry-helper 
-                              x "ingredients")))
-  (string-append "Calories: " (my-number->string 
+                              x "ingredients")) "\n"))
+  (printf (string-append "Calories: " (my-number->string 
                                (check-null (find-entry-helper 
-                                            x "calories"))))
- (string-append "% Daily Fat: " (my-number->string 
+                                            x "calories"))) "\n"))
+ (printf (string-append "% Daily Fat: " (my-number->string 
                                  (check-null (find-entry-helper 
-                                              x                                          "total_fat_percent"))))
- (string-append "% Daily Saturated Fat: " 
+                                              x                                          "total_fat_percent"))) "\n"))
+ (printf (string-append "% Daily Saturated Fat: " 
                 (my-number->string (check-null 
                                     (find-entry-helper 
                                                 x 
-                                    "fat_saturated_percent")))) 
- (string-append "% Daily Trans Fat: " 
+                                    "fat_saturated_percent")))"\n")) 
+ (printf (string-append "% Daily Trans Fat: " 
                 (my-number->string (check-null 
                                     (find-entry-helper 
                                                 x 
-                                     "fat_trans_percent")))) 
- (string-append "% Daily Sodium: " 
+                                     "fat_trans_percent")))"\n")) 
+ (printf (string-append "% Daily Sodium: " 
                 (my-number->string (check-null 
                                     (find-entry-helper 
-                                                x                                                   "sodium_percent"))))
-  (string-append "% Daily Carbohydrates: " 
+                                                x                                                   "sodium_percent")))"\n"))
+  (printf (string-append "% Daily Carbohydrates: " 
                  (my-number->string (check-null 
                                      (find-entry-helper 
                                                  x 
-                                      "carbo_percent"))))
-  (string-append "% Daily Fibre: " 
+                                      "carbo_percent")))"\n"))
+  (printf (string-append "% Daily Fibre: " 
                  (my-number->string (check-null 
                                      (find-entry-helper 
                                                  x 
-                                      "carbo_fibre_percent"))))
-  (string-append "Sugar (grams): " 
+                                      "carbo_fibre_percent")))"\n"))
+  (printf (string-append "Sugar (grams): " 
                  (my-number->string (check-null 
                                      (find-entry-helper 
                                                  x 
-                                      "carbo_sugars_g"))))
-  (string-append "Protein (grams): " 
+                                      "carbo_sugars_g")))"\n"))
+  (printf (string-append "Protein (grams): " 
                  (my-number->string (check-null 
                                      (find-entry-helper 
                                                  x 
-                                      "protein_g"))))
-  (string-append "% Daily Vitamin A: " 
+                                      "protein_g")))"\n"))
+  (printf (string-append "% Daily Vitamin A: " 
                  (my-number->string (check-null 
                                      (find-entry-helper 
                                                  x 
-                                      "vitamin_a_percent")))) 
-  (string-append "% Daily Vitamin C: " 
+                                      "vitamin_a_percent")))"\n")) 
+  (printf (string-append "% Daily Vitamin C: " 
                  (my-number->string (check-null 
                                      (find-entry-helper 
                                                  x 
-                                      "vitamin_c_percent")))) 
-  (string-append "% Daily Calcium: " 
+                                      "vitamin_c_percent")))"\n")) 
+  (printf (string-append "% Daily Calcium: " 
                  (my-number->string (check-null 
                                      (find-entry-helper 
                                                  x 
-                                      "calcium_percent"))))
-  (string-append "% Daily Iron: " 
+                                      "calcium_percent")))"\n"))
+  (printf (string-append "% Daily Iron: " 
                  (my-number->string (check-null 
                                      (find-entry-helper 
                                                  x 
-                                      "iron_percent"))))))
+                                      "iron_percent"))) "\n")))
 
 ;;(check-null item) produces "Info not provided" if item is
 ;;   null, or item otherwise
@@ -230,4 +238,55 @@
   (cond
    [(number? item) (number->string item)]
    [else item]))
+
+(define id 2)
+
+
+"Enter menu for menu info, or item for item info"
+
+(define input (read-line (current-input-port) 'any))
+
+(define response 0)
+
+(cond
+  [(string=? "menu" input) (set! response 1)]
+  [(string=? "item" input) (set! response 2)])
+
+(cond
+  [(= response 0) exit]
+  [(= response 1) "Enter an outlet (Mudie's, REVelation, or Pastry Plus)"]
+  [(= response 2) "Enter an item id"])
+
+(define outlet-or-item (read-line (current-input-port) 'any))
+
+(cond
+  [(= response 2) (printf "Nutritional Facts for item ~a are:\n" outlet-or-item )])
+
+(cond
+  [(= response 2) (meal-info outlet-or-item)])
+
+(cond
+  [(= response 2) (exit)])
+
+"Enter a day (monday-friday)"
+
+(define day (read-line (current-input-port) 'any))
+
+"Enter a meal (lunch or dinner)"
+
+(define meal (read-line (current-input-port) 'any))
+
+(printf "The meal being served at ~a on ~a for ~a is:\n" outlet-or-item day meal)
+
+(menu-lookup outlet-or-item day meal)
+
+(exit)
+
+
+
+
+
+
+
+
 
